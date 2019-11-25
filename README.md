@@ -3,7 +3,9 @@ Calculating GDP dispersion (regional inequality) within Europe.
 
 # What is GDP dispersion?
 GDP dispersion is calculated as defined by Eurostat using the following formula.
+
 ![GDP dispersion formula](DispersionFormula.jpg)
+
 
 # Why create a UK* measure?
 Regional inequality measures can be distorted if any of the regions used are smaller than functional economic areas, specifically where there is significant commuting between different regions. The methods I have created use NUTS2 regions, since these are as small as possible while almost never being smaller than a functional economic area. There is a single major exception to this rule though, London. 
