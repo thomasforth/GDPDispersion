@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\nama_10r_2gdp_1_Data.csv" />
+    <None Remove="Assets\nama_10r_2gdp_2_Data.csv" />
+    <None Remove="Assets\nama_10r_2hhinc_1_Data.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\nama_10r_2gdp_1_Data.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\nama_10r_2gdp_2_Data.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\nama_10r_2hhinc_1_Data.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="12.1.2" />
+  </ItemGroup>
+
+</Project>
