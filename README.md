@@ -1,5 +1,5 @@
 # GDPDispersion
-Calculating GDP dispersion (regional inequality) within Europe.
+Calculating GDP dispersion (regional inequality) within Europe and European nations.
 
 ## What is GDP dispersion?
 GDP dispersion is calculated as defined by Eurostat using the following formula.
