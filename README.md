@@ -21,7 +21,7 @@ France and The Netherlands recently redefined their regions. Eurostat no longer 
 ## Why isn't there a whole EU dataset?
 The EU as a whole is a bit complicated because countries have joined and left over time. I'm working on calculating a whole EU number (which will include the UK* correction) but I haven't made it work yet.
 
-## License
+## Licence
 * The raw data here comes from Eurostat and is available under [The Eurostat Data Licence](https://ec.europa.eu/eurostat/about/policies/copyright).
 * The code used for processing the raw data is available under an MIT license.
-* The processed data is released under the most permissive license possible, and is probably restricted by The Eurostat Data License above. This is an open and permissive license, so you're almost certainly safe to use it for whatever you like.
+* The processed data is released under the most permissive license possible, and is probably restricted by The Eurostat Data Licence above. This is an open and permissive license, so you're almost certainly safe to use it for whatever you like.
