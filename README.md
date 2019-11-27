@@ -1,4 +1,4 @@
-# GDPDispersion
+# GDP Dispersion
 Calculating GDP dispersion (regional inequality) within Europe and European nations.
 
 ## What is GDP dispersion?
