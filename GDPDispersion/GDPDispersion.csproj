@@ -8,7 +8,6 @@
   <ItemGroup>
     <None Remove="Assets\demo_r_d2jan_1_Data.csv" />
     <None Remove="Assets\euregionsabsolutepps_unpivotted.csv" />
-    <None Remove="Assets\nama_10r_2gdp_1_Data.csv" />
     <None Remove="Assets\nama_10r_2gdp_2_Data.csv" />
     <None Remove="Assets\nama_10r_2hhinc_1_Data.csv" />
   </ItemGroup>
@@ -18,9 +17,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\euregionsabsolutepps_unpivotted.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\nama_10r_2gdp_1_Data.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\nama_10r_2gdp_2_Data.csv">
