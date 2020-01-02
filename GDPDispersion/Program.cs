@@ -146,8 +146,17 @@ namespace GDPDispersion
                 }
             }
 
+            // Merge back in income dispersion (preferring a dataset that has a value)
+            foreach(DispersionOutput combinedDispersionOutput in CombinedDispersionOutputs)
+            {
+                if ((combinedDispersionOutput.IncomeDispersion.HasValue == false) && 
+                    CurrentDispersionOutputs.Exists(x => x.Country ==combinedDispersionOutput.Country && x.Year == combinedDispersionOutput.Year)) {
+                    combinedDispersionOutput.IncomeDispersion = CurrentDispersionOutputs.Where(x => x.Country == combinedDispersionOutput.Country && x.Year == combinedDispersionOutput.Year).FirstOrDefault().IncomeDispersion;
+                }
+            }
+
             // Output the results
-            using (TextWriter writer = new StreamWriter($"CalculatedDisperions_LondonFixed.csv", false, System.Text.Encoding.UTF8))
+                using (TextWriter writer = new StreamWriter($"CalculatedDisperions_LondonFixed.csv", false, System.Text.Encoding.UTF8))
             {
                 var csv = new CsvWriter(writer);
                 csv.WriteRecords(CombinedDispersionOutputs);
@@ -305,10 +314,10 @@ namespace GDPDispersion
             }
             return DispersionOutputs;
         }
-        static double calculateGDPDispersion(List<CombinedData> ListOfRegions)
+        static double? calculateGDPDispersion(List<CombinedData> ListOfRegions)
         {
             // we assume that the list of regions is complete, ie. fully covers the country with no overlaps
-            
+
             double P = ListOfRegions.Sum(x => x.Population);
             double Y = ListOfRegions.Sum(x => x.GDPTotal) / ListOfRegions.Sum(x => x.Population);
             double D = 0;
@@ -331,7 +340,14 @@ namespace GDPDispersion
             }
 
             double Dispersion = 100 * D / Y;
-            return Math.Round(Dispersion,1);
+            if (Dispersion == 0 || double.IsNaN(Dispersion) == true)
+            {
+                return null;
+            }
+            else
+            {
+                return Math.Round(Dispersion, 1);
+            }
         }
 
         // Theil index https://www.tandfonline.com/doi/full/10.1080/17421772.2017.1343491
@@ -380,7 +396,7 @@ namespace GDPDispersion
         }
 
         // I have concerns about Eurostat income data, and results from this method should be treated with caution.
-        static double calculateIncomeDispersion(List<CombinedData> ListOfRegions)
+        static double? calculateIncomeDispersion(List<CombinedData> ListOfRegions)
         {
             // we assume that the list of regions is complete, ie. fully covers the country with no overlaps            
             double P = ListOfRegions.Sum(x => x.Population);
@@ -393,7 +409,13 @@ namespace GDPDispersion
             }
 
             double Dispersion = 100 * D / Y;
-            return Math.Round(Dispersion, 1);
+            if (Dispersion == 0 || double.IsNaN(Dispersion) == true)
+            {
+                return null;
+            }
+            else {
+                return Math.Round(Dispersion, 1);
+            }
         }
 
     }
@@ -417,10 +439,10 @@ namespace GDPDispersion
     public class DispersionOutput
     {
         public string Country { get; set; }
-        public double GDPDispersion { get; set; }
+        public double? GDPDispersion { get; set; }
 
         [Name("Income Dispersion (I am unsure about Eurostat income data).")]
-        public double IncomeDispersion { get; set; }
+        public double? IncomeDispersion { get; set; }
 
         [Name("GDP Theil Index (unsafe, do not use without verification).")]
         public double GDPTheilT { get; set; }
