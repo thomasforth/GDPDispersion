@@ -2,14 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\demo_r_d2jan_1_Data.csv" />
     <None Remove="Assets\euregionsabsolutepps_unpivotted.csv" />
+    <None Remove="Assets\nama_10r_2gdp_1_Data.csv" />
     <None Remove="Assets\nama_10r_2gdp_2_Data.csv" />
     <None Remove="Assets\nama_10r_2hhinc_1_Data.csv" />
+    <None Remove="Assets\nama_10r_2hhinc_1_Data_Abs.csv" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,16 +21,22 @@
     <Content Include="Assets\euregionsabsolutepps_unpivotted.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\nama_10r_2gdp_1_Data.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\nama_10r_2gdp_2_Data.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\nama_10r_2hhinc_1_Data.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\nama_10r_2hhinc_1_Data_Abs.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="12.1.2" />
+    <PackageReference Include="CsvHelper" Version="16.0.0" />
   </ItemGroup>
 
 </Project>

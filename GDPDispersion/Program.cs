@@ -13,40 +13,58 @@ namespace GDPDispersion
     {
         static void Main(string[] args)
         {
-            List<GDPTotalRaw> RawGDPTotals;
+
+            //List<GDPTotalRaw> RawGDPTotals;
             List<GDPPerHeadRaw> RawGDPPerHead;
             List<IncomeRaw> RawIncomes;
 
-            using (TextReader textReader = File.OpenText(@"Assets\nama_10r_2gdp_2_Data.csv"))
+            Console.WriteLine("Loading GDP per person at PPS for small regions of Europe.");
+            using (TextReader textReader = File.OpenText(@"Assets\nama_10r_2gdp_1_Data.csv"))
             {
-                CsvReader csvReader = new CsvReader(textReader);
+                CsvReader csvReader = new CsvReader(textReader, CultureInfo.InvariantCulture);
+                csvReader.Configuration.HeaderValidated = null;
+                csvReader.Configuration.MissingFieldFound = null;
                 RawGDPPerHead = new List<GDPPerHeadRaw>(csvReader.GetRecords<GDPPerHeadRaw>());
             }
 
+            /*
+            Console.WriteLine("Loading household income per person at PPS for small regions of Europe.");
             using (TextReader textReader = File.OpenText(@"Assets\nama_10r_2hhinc_1_Data.csv"))
             {
-                CsvReader csvReader = new CsvReader(textReader);
+                CsvReader csvReader = new CsvReader(textReader, CultureInfo.InvariantCulture);
+                RawIncomes = new List<IncomeRaw>(csvReader.GetRecords<IncomeRaw>());
+            }
+            */
+            Console.WriteLine("Loading total household income at PPS for small regions of Europe.");
+            using (TextReader textReader = File.OpenText(@"Assets\nama_10r_2hhinc_1_Data_Abs.csv"))
+            {
+                CsvReader csvReader = new CsvReader(textReader, CultureInfo.InvariantCulture);
                 RawIncomes = new List<IncomeRaw>(csvReader.GetRecords<IncomeRaw>());
             }
 
-            // Create populations list
-            List<Population> Populations = new List<Population>();
+            Console.WriteLine("Loading populations for small regions of Europe.");
+            List<Population> Populations = new List<Population>();            
             using (TextReader textReader = File.OpenText("Assets/demo_r_d2jan_1_Data.csv"))
             {
-                CsvReader csvReader = new CsvReader(textReader);
+                CsvReader csvReader = new CsvReader(textReader, CultureInfo.InvariantCulture);
                 csvReader.Configuration.HeaderValidated = null;
                 csvReader.Configuration.MissingFieldFound = null;
                 Populations = csvReader.GetRecords<Population>().ToList();
             }
 
-            // Load historic GDP/head (at PPS) data.
+            Console.WriteLine("Loading historic GDP/head (at PPS) for small regions of Europe. This lets us create complete time series for countries such as France and The Netherlands which have changed their geographies since 2000.");
             List<HistoricGDPPerHeadPPS> HistoricGDPs = new List<HistoricGDPPerHeadPPS>();
             using (TextReader textReader = File.OpenText("Assets/euregionsabsolutepps_unpivotted.csv"))
             {
-                CsvReader csvReader = new CsvReader(textReader);
+                CsvReader csvReader = new CsvReader(textReader, CultureInfo.InvariantCulture);
                 HistoricGDPs = csvReader.GetRecords<HistoricGDPPerHeadPPS>().ToList();
             }
 
+            // Remove 2015 and 2016 French data (we have new data that's better)
+            HistoricGDPs.RemoveAll(x => x.Year >= 2015 && x.NUTScode.StartsWith("FR"));
+
+
+            /*
             List<CombinedData> HistoricCombinedData = new List<CombinedData>();
             foreach(HistoricGDPPerHeadPPS historicGDPPerHeadPPS in HistoricGDPs)
             {
@@ -73,62 +91,95 @@ namespace GDPDispersion
 
                 HistoricCombinedData.Add(combinedData);
             }
+            */
 
             List<CombinedData> CombinedCurrentData = new List<CombinedData>();
-            foreach (GDPPerHeadRaw gDPPerHeadRaw in RawGDPPerHead)
+
+            List<int> DistinctYears = RawGDPPerHead.Select(x => x.TIME).ToList();
+            DistinctYears.AddRange(RawIncomes.Select(x => x.TIME));
+            DistinctYears = DistinctYears.Distinct().ToList();
+
+            List<string> DistinctRegionCodes = RawGDPPerHead.Select(x => x.GEO).ToList();
+            DistinctRegionCodes.AddRange(RawIncomes.Select(x => x.GEO));
+            DistinctRegionCodes.AddRange(HistoricGDPs.Select(x => x.NUTScode));
+            DistinctRegionCodes = DistinctRegionCodes.Distinct().ToList();
+            foreach (int year in DistinctYears)
             {
-                int dummyint = 0;
-                if (int.TryParse(gDPPerHeadRaw.Value.Replace(",", ""), out dummyint))
+                foreach (string regioncode in DistinctRegionCodes)
                 {
-                    // Create combined data object and start by adding GDP per Head (PPP)
-                    CombinedData combinedData = new CombinedData()
-                    {
-                        Year = gDPPerHeadRaw.TIME,
-                        RegionCode = gDPPerHeadRaw.GEO,
-                        CountryOrGrouping = gDPPerHeadRaw.GEO_LABEL,
-                        GDPPerHead = int.Parse(gDPPerHeadRaw.Value.Replace(",", "")),
-                    };
-                    if (gDPPerHeadRaw.GEO.StartsWith("EU") == false)
-                    {
-                        combinedData.NUTSLevel = gDPPerHeadRaw.GEO.Length - 2;
-                    }
+                    HistoricGDPPerHeadPPS HistoricGDPPerHead = HistoricGDPs.Where(x => x.NUTScode == regioncode && x.Year == year).FirstOrDefault();
+                    GDPPerHeadRaw GDPPerHead = RawGDPPerHead.Where(x => x.GEO == regioncode && x.TIME == year).FirstOrDefault();
+                    IncomeRaw Income = RawIncomes.Where(x => x.GEO == regioncode && x.TIME == year).FirstOrDefault();
+                    if (Income != null && Income.Value == ":") { Income = null; }
+                    if (GDPPerHead != null && GDPPerHead.Value == ":") { GDPPerHead = null; }
 
-                    // Add GDP (PPP) Total and calculate population
-                    if (Populations.Where(x => x.GEO == combinedData.RegionCode && x.TIME == combinedData.Year).FirstOrDefault() != null)
+                    if (HistoricGDPPerHead != null || GDPPerHead != null || Income != null)
                     {
-                        combinedData.Population = Populations.Where(x => x.GEO == combinedData.RegionCode && x.TIME == combinedData.Year).First().Value;
-                    }
-                    else if (Populations.Where(x => x.GEO == combinedData.RegionCode).FirstOrDefault() != null)
-                    {
-                        combinedData.Population = Populations.Where(x => x.GEO == combinedData.RegionCode).First().Value;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"No population data found for {combinedData.CountryOrGrouping} in {combinedData.Year}.");
-                    }
-                    combinedData.GDPTotal = combinedData.Population * combinedData.GDPPerHead;
+                        CombinedData combinedData = new CombinedData()
+                        {
+                            Year = year,
+                            RegionCode = regioncode
+                        };
+                        if (GDPPerHead != null)
+                        {
+                            combinedData.RegionName = GDPPerHead.GEO_LABEL;
+                            if (GDPPerHead.Value.Contains(','))
+                            {
+                                combinedData.GDPPerHead = int.Parse(GDPPerHead.Value.Replace(",", ""));
+                            }
+                            if (GDPPerHead.GEO.StartsWith("EU") == false)
+                            {
+                                combinedData.NUTSLevel = GDPPerHead.GEO.Length - 2;
+                            }
+                        }
+                        else if (HistoricGDPPerHead != null)
+                        {
+                            combinedData.RegionName = HistoricGDPPerHead.regionName;
+                            combinedData.NUTSLevel = HistoricGDPPerHead.NUTSlevel;
+                            combinedData.GDPPerHead = HistoricGDPPerHead.Value;
+                        }
 
-                    // Add Income (PPP) per head
-                    if (RawIncomes.Where(x => x.TIME == combinedData.Year && x.GEO == combinedData.RegionCode).FirstOrDefault() != null &&
-                        int.TryParse(RawIncomes.Where(x => x.TIME == combinedData.Year && x.GEO == combinedData.RegionCode).FirstOrDefault().Value.Replace(",", ""), out dummyint))
-                    {
-                        combinedData.IncomePerHead = int.Parse(RawIncomes.Where(x => x.TIME == combinedData.Year && x.GEO == combinedData.RegionCode).FirstOrDefault().Value.Replace(",", ""));
-                    }
+                        // Add GDP (PPP) Total and calculate population
+                        if (Populations.Where(x => x.GEO == combinedData.RegionCode && x.TIME == combinedData.Year).FirstOrDefault() != null)
+                        {
+                            combinedData.Population = Populations.Where(x => x.GEO == combinedData.RegionCode && x.TIME == combinedData.Year).First().Value;
+                        }
+                        else if (Populations.Where(x => x.GEO == combinedData.RegionCode).FirstOrDefault() != null)
+                        {
+                            combinedData.Population = Populations.Where(x => x.GEO == combinedData.RegionCode).First().Value;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"No population data found for {combinedData.RegionCode} in {combinedData.Year}.");
+                        }
+                        combinedData.GDPTotal = combinedData.Population * combinedData.GDPPerHead;
 
-                    // Calculate Income total
-                    combinedData.IncomeTotal = combinedData.IncomePerHead * combinedData.Population;
-                    CombinedCurrentData.Add(combinedData);
+                        // Add Income (PPP) per head
+                        if (Income != null)
+                        {
+                            combinedData.RegionName = Income.GEO_LABEL;
+                            combinedData.IncomeTotal = 1000000 * double.Parse(Income.Value.Replace(",", ""));
+                            combinedData.NUTSLevel = Income.GEO.Length - 2;
+                        }
+                        // Calculate Income total
+                        if (combinedData.Population > 0)
+                        {
+                            combinedData.IncomePerHead = (int)Math.Round(combinedData.IncomeTotal / combinedData.Population, 0);
+                        }
+                        CombinedCurrentData.Add(combinedData);
+                    }
                 }
             }
 
             // Calculate dispersions for both historic and current datasets
-            List<DispersionOutput> HistoricDispersionOutputs = CalculateDispersions(HistoricCombinedData);
-            List<DispersionOutput> CurrentDispersionOutputs = CalculateDispersions(CombinedCurrentData);
+            //List<DispersionOutput> HistoricDispersionOutputs = CalculateDispersions(HistoricCombinedData);
+            List<DispersionOutput> DispersionOutputs = CalculateDispersions(CombinedCurrentData);
 
 
             // Merge the two outputs (prefering the dataset which was calculated using the highest number of regions)
-            List<DispersionOutput> CombinedDispersionOutputs = new List<DispersionOutput>();            
-            CombinedDispersionOutputs.AddRange(HistoricDispersionOutputs);
+            //List<DispersionOutput> CombinedDispersionOutputs = new List<DispersionOutput>();            
+            //CombinedDispersionOutputs.AddRange(HistoricDispersionOutputs);
+            /*
             foreach (DispersionOutput currentDispersionOutput in CurrentDispersionOutputs)
             {
                 if (CombinedDispersionOutputs.Exists(x => x.Country == currentDispersionOutput.Country && x.Year == currentDispersionOutput.Year) == false)
@@ -143,23 +194,16 @@ namespace GDPDispersion
                 else
                 {
                     // the existing calculated dispersion was calculated from a higher number of regions than the potential replacement. The existing dispersion is retained.
+                    CombinedDispersionOutputs.Add(currentDispersionOutput);
                 }
             }
+            */
 
-            // Merge back in income dispersion (preferring a dataset that has a value)
-            foreach(DispersionOutput combinedDispersionOutput in CombinedDispersionOutputs)
+            // Output the dispersion calculation results
+            using (TextWriter writer = new StreamWriter($"CalculatedDispersions_LondonFixed.csv", false, System.Text.Encoding.UTF8))
             {
-                if ((combinedDispersionOutput.IncomeDispersion.HasValue == false) && 
-                    CurrentDispersionOutputs.Exists(x => x.Country ==combinedDispersionOutput.Country && x.Year == combinedDispersionOutput.Year)) {
-                    combinedDispersionOutput.IncomeDispersion = CurrentDispersionOutputs.Where(x => x.Country == combinedDispersionOutput.Country && x.Year == combinedDispersionOutput.Year).FirstOrDefault().IncomeDispersion;
-                }
-            }
-
-            // Output the results
-                using (TextWriter writer = new StreamWriter($"CalculatedDisperions_LondonFixed.csv", false, System.Text.Encoding.UTF8))
-            {
-                var csv = new CsvWriter(writer);
-                csv.WriteRecords(CombinedDispersionOutputs);
+                var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                csv.WriteRecords(DispersionOutputs);
             }
         }
 
@@ -179,12 +223,12 @@ namespace GDPDispersion
             UniqueCountries.Add("North England");
             UniqueCountries.Add("Low Countries");
 
-            List<int> UniqueYears = CombinedData.Select(x => x.Year).Distinct().ToList();
+            List<int> UniqueYears = CombinedData.Select(x => x.Year).Distinct().OrderBy(x => x).ToList();
             List<DispersionOutput> DispersionOutputs = new List<DispersionOutput>();
+            List<CombinedData> AllRawData = new List<CombinedData>();
             foreach (string country in UniqueCountries)
             {
                 List<CombinedData> NUTS2RegionsInTheCountry = CombinedData.Where(x => x.RegionCode.StartsWith(country) && x.NUTSLevel == 2).ToList();
-
                 // whole-EU calculations are a special case. The LondonFix is applied and all NUTS2 regions for nations within the EU are used.
                 // CURRENTLY DOES NOT INCLUDE CROATIA (HR). THIS MAY NEED FIXING SOON!
                 List<string> EA12Countries = new List<string>() { "AT", "BE", "DE", "EL", "ES", "FI", "FR", "IE", "IT", "LU", "NL", "PT"};
@@ -295,78 +339,109 @@ namespace GDPDispersion
                     DispersionOutput dispersionOutput = new DispersionOutput()
                     {
                         Year = year,
-                        Country = country
+                        Country = country,
+                        IncomeDispersion = double.NaN,
+                        IncomeTheilT = double.NaN,
+                        GDPDispersion = double.NaN,
+                        GDPTheilT = double.NaN
                     };
 
-                    dispersionOutput.GDPDispersion = calculateGDPDispersion(NUTS2RegionsInTheCountryThisYear);
-                    dispersionOutput.GDPTheilT = calculateGDPTheilTIndex(NUTS2RegionsInTheCountryThisYear);
-                    dispersionOutput.RegionsConsidered = NUTS2RegionsInTheCountryThisYear.Count;
+                    foreach (CombinedData cd in NUTS2RegionsInTheCountryThisYear)
+                    {
+                        CombinedData newcd = new CombinedData()
+                        {
+                            CountryOrOtherGrouping = country,
+                            Year = cd.Year,
+                            GDPPerHead = cd.GDPPerHead,
+                            GDPTotal = cd.GDPTotal,
+                            IncomePerHead = cd.IncomePerHead,
+                            IncomeTotal = cd.IncomeTotal,
+                            Population = cd.Population,
+                            RegionCode = cd.RegionCode,
+                            RegionName = cd.RegionName,
+                            NUTSLevel = cd.NUTSLevel,
+                        };
+                        AllRawData.Add(newcd);
+                    }
 
-                    if (CombinedData.Where(x => x.Year == year && x.RegionCode == country).FirstOrDefault() != null)
+                    if (NUTS2RegionsInTheCountryThisYear.Where(x => x.IncomePerHead > 0).Count() > 1)
                     {
                         dispersionOutput.IncomeDispersion = calculateIncomeDispersion(NUTS2RegionsInTheCountryThisYear);
                         dispersionOutput.IncomeTheilT = calculateIncomeTheilTIndex(NUTS2RegionsInTheCountryThisYear);
+                        dispersionOutput.RegionsConsideredForGDP = NUTS2RegionsInTheCountryThisYear.Where(x => x.IncomePerHead > 0).Count();
+                    }
+
+                    if (NUTS2RegionsInTheCountryThisYear.Where(x => x.GDPPerHead > 0).Count() > 1)
+                    {
+                        dispersionOutput.GDPDispersion = calculateGDPDispersion(NUTS2RegionsInTheCountryThisYear);
+                        dispersionOutput.GDPTheilT = calculateGDPTheilTIndex(NUTS2RegionsInTheCountryThisYear);
+                        dispersionOutput.RegionsConsideredForGDP = NUTS2RegionsInTheCountryThisYear.Where(x => x.GDPPerHead > 0).Count();
                     }
 
                     DispersionOutputs.Add(dispersionOutput);
                 }
-
             }
+
+            // Output the prepared raw data for further analysis
+            using (TextWriter writer = new StreamWriter($"PreparedDataForDispersions.csv", false, System.Text.Encoding.UTF8))
+            {
+                var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                csv.WriteRecords(AllRawData);
+            }
+
             return DispersionOutputs;
         }
-        static double? calculateGDPDispersion(List<CombinedData> ListOfRegions)
+        static double calculateGDPDispersion(List<CombinedData> ListOfRegions)
         {
-            // we assume that the list of regions is complete, ie. fully covers the country with no overlaps
+            // We remove regions with zero population or zero GDP
+            List<CombinedData> CleanListOfRegions = ListOfRegions.Where(x => x.Population != 0 && x.GDPTotal != 0).ToList();
 
-            double P = ListOfRegions.Sum(x => x.Population);
-            double Y = ListOfRegions.Sum(x => x.GDPTotal) / ListOfRegions.Sum(x => x.Population);
+            // we assume that the list of regions is complete, ie. fully covers the country with no overlaps            
+            double P = CleanListOfRegions.Sum(x => x.Population);
+            double Y = CleanListOfRegions.Sum(x => x.GDPTotal) / CleanListOfRegions.Sum(x => x.Population);
             double D = 0;
 
-            foreach (CombinedData region in ListOfRegions)
+            foreach (CombinedData region in CleanListOfRegions)
             {
                 if (region.Population == 0)
                 {
-                    Console.WriteLine($"Region {region.CountryOrGrouping} has zero population during GDP dispersion calculation. This shouldn't happen!");
+                    Console.WriteLine($"Region {region.RegionName} has zero population during GDP dispersion calculation. This shouldn't happen!");
                 }
                 if (region.GDPPerHead == 0)
                 {
-                    Console.WriteLine($"Region {region.CountryOrGrouping} has zero GDP per head during GDP dispersion calculation. This shouldn't happen!");
+                    Console.WriteLine($"Region {region.RegionName} has zero GDP per head during GDP dispersion calculation. This shouldn't happen!");
                 }
                 if (region.GDPTotal == 0)
                 {
-                    Console.WriteLine($"Region {region.CountryOrGrouping} has zero total GDP during GDP dispersion calculation. This shouldn't happen!");
+                    Console.WriteLine($"Region {region.RegionName} has zero total GDP during GDP dispersion calculation. This shouldn't happen!");
                 }
                 D += (Math.Abs(region.GDPPerHead - Y)) * (region.Population / P);
             }
 
             double Dispersion = 100 * D / Y;
-            if (Dispersion == 0 || double.IsNaN(Dispersion) == true)
-            {
-                return null;
-            }
-            else
-            {
-                return Math.Round(Dispersion, 1);
-            }
+            Dispersion = Math.Round(Dispersion, 1);
+            return Dispersion;
         }
 
         // Theil index https://www.tandfonline.com/doi/full/10.1080/17421772.2017.1343491
         // This method is unchecked and unsafe. It is included in the hope it will be checked and improved.
         static double calculateGDPTheilTIndex(List<CombinedData> ListOfRegions)
         {
-            
+            // We remove regions with zero population or zero GDP
+            List<CombinedData> CleanListOfRegions = ListOfRegions.Where(x => x.Population != 0 && x.GDPTotal != 0).ToList();
+
             // we assume that the list of regions is complete, ie. fully covers the country with no overlaps
-            double mu = ListOfRegions.Sum(x => x.GDPTotal) / ListOfRegions.Sum(x => x.Population);
+            double mu = CleanListOfRegions.Sum(x => x.GDPTotal) / CleanListOfRegions.Sum(x => x.Population);
             /*if (ListOfRegions.Count > 0)
             {
                 mu = ListOfRegions.Average(x => x.GDPPerHead); // REALLY DON'T LIKE THIS
             }*/
-            double N = ListOfRegions.Count;
+            double N = CleanListOfRegions.Count;
             double T = 0;
 
-            foreach (CombinedData region in ListOfRegions)
+            foreach (CombinedData region in CleanListOfRegions)
             {
-                T += (region.Population/ ListOfRegions.Sum(x => x.Population)) * (region.GDPPerHead / mu) * (Math.Log((region.GDPPerHead) / mu));
+                T += (region.Population/ CleanListOfRegions.Sum(x => x.Population)) * (region.GDPPerHead / mu) * (Math.Log((region.GDPPerHead) / mu));
             }
 
             double TheilT = T / N;
@@ -377,16 +452,19 @@ namespace GDPDispersion
         // This method is unchecked and unsafe. It is included in the hope it will be checked and improved.
         static double calculateIncomeTheilTIndex(List<CombinedData> ListOfRegions)
         {
+            // We remove regions with zero population or zero income
+            List<CombinedData> CleanListOfRegions = ListOfRegions.Where(x => x.Population != 0 && x.IncomeTotal != 0).ToList();
+
             // we assume that the list of regions is complete, ie. fully covers the country with no overlaps
-            double mu = ListOfRegions.Sum(x => x.IncomeTotal) / ListOfRegions.Sum(x => x.Population);
-            if (ListOfRegions.Count > 0)
+            double mu = CleanListOfRegions.Sum(x => x.IncomeTotal) / CleanListOfRegions.Sum(x => x.Population);
+            if (CleanListOfRegions.Count > 0)
             {
-                mu = ListOfRegions.Average(x => x.IncomePerHead); // REALLY DON'T LIKE THIS
+                mu = CleanListOfRegions.Average(x => x.IncomePerHead); // REALLY DON'T LIKE THIS
             }
-            double N = ListOfRegions.Count;
+            double N = CleanListOfRegions.Count;
             double T = 0;
 
-            foreach (CombinedData region in ListOfRegions)
+            foreach (CombinedData region in CleanListOfRegions)
             {
                 T += (region.IncomePerHead / mu) * (Math.Log((region.IncomePerHead) / mu));
             }
@@ -396,26 +474,23 @@ namespace GDPDispersion
         }
 
         // I have concerns about Eurostat income data, and results from this method should be treated with caution.
-        static double? calculateIncomeDispersion(List<CombinedData> ListOfRegions)
+        static double calculateIncomeDispersion(List<CombinedData> ListOfRegions)
         {
+            // We remove regions with zero population or zero income
+            List<CombinedData> CleanListOfRegions = ListOfRegions.Where(x => x.Population != 0 && x.IncomeTotal != 0).ToList();
+
             // we assume that the list of regions is complete, ie. fully covers the country with no overlaps            
-            double P = ListOfRegions.Sum(x => x.Population);
-            double Y = ListOfRegions.Sum(x => x.IncomeTotal) / ListOfRegions.Sum(x => x.Population);
+            double P = CleanListOfRegions.Sum(x => x.Population);
+            double Y = CleanListOfRegions.Sum(x => x.IncomeTotal) / CleanListOfRegions.Sum(x => x.Population);
             double D = 0;
 
-            foreach (CombinedData region in ListOfRegions)
+            foreach (CombinedData region in CleanListOfRegions)
             {
                 D += (Math.Abs(region.IncomePerHead - Y)) * (region.Population / P);
             }
 
             double Dispersion = 100 * D / Y;
-            if (Dispersion == 0 || double.IsNaN(Dispersion) == true)
-            {
-                return null;
-            }
-            else {
-                return Math.Round(Dispersion, 1);
-            }
+            return Math.Round(Dispersion, 1);
         }
 
     }
@@ -439,24 +514,25 @@ namespace GDPDispersion
     public class DispersionOutput
     {
         public string Country { get; set; }
-        public double? GDPDispersion { get; set; }
+        public double GDPDispersion { get; set; }
 
         [Name("Income Dispersion (I am unsure about Eurostat income data).")]
-        public double? IncomeDispersion { get; set; }
+        public double IncomeDispersion { get; set; }
 
         [Name("GDP Theil Index (unsafe, do not use without verification).")]
         public double GDPTheilT { get; set; }
         [Name("Income Theil Index (unsafe, do not use without verification).")]
         public double IncomeTheilT { get; set; }
         public int Year { get; set; }
-        public int RegionsConsidered { get; set; }
+        public int RegionsConsideredForIncome { get; set; }
+        public int RegionsConsideredForGDP { get; set; }
     }
 
     public class CombinedData
     {
         public int Year { get; set; }
         public string RegionCode { get; set; }
-        public string CountryOrGrouping { get; set; }
+        public string RegionName { get; set; }
         public double GDPPerHead { get; set; }
         public double GDPTotal { get; set; }
         public int NUTSLevel { get; set; }
@@ -464,6 +540,7 @@ namespace GDPDispersion
 
         public double IncomeTotal { get; set; }
         public double Population { get; set; }
+        public string CountryOrOtherGrouping { get; set; }
     }
 
     public class GDPTotalRaw

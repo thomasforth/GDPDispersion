@@ -1,0 +1,49 @@
+Code,Name,Type,Country,Number,GDP,Population,GDPperCapita
+BE003: Ghent,Ghent,City,Belgium,6,20982.94,592100,35438
+BE005: Liege,Liege,City,Belgium,6,21519.42,739798,29088
+BE002: Antwerp,Antwerp,City,Belgium,6,49311.67,1081904,45579
+BE001: Brussels,Brussels,City,Belgium,6,134939.93,2588102,52139
+BEL: Belgium,Belgium,Country,Belgium,6,435625.05,11203992,38881
+FR004: Toulouse,Toulouse,City,France,5,51905.7,1309149,39648
+FR009: Lille,Lille,City,France,5,43117.69,1363465,31624
+FR203: Marseille,Marseille,City,France,5,65518.12,1773503,36943
+FR003: Lyon,Lyon,City,France,5,87804.33,1960847,44779
+FR001: Paris,Paris,City,France,5,707134.27,12037889,58742
+FRA: France,France,Country,France,5,2299770.97,63920247,35979
+DE007: Stuttgart,Stuttgart,City,Germany,8,108876.88,1965942,55382
+DE005: Frankfurt,Frankfurt,City,Germany,8,143516.43,2533311,56652
+DE003: Munich,Munich,City,Germany,8,184700.85,2965871,62275
+DE002: Hamburg,Hamburg,City,Germany,8,158074.25,3008841,52537
+DE001: Berlin,Berlin,City,Germany,8,165376.72,4399542,37590
+DEU: Germany,Germany,Country,Germany,8,3363273.99,80767463,41641
+GR002: Thessalonica,Thessalonica,City,Greece,1,18850.88,975439,19326
+GR001: Athens,Athens,City,Greece,1,125724.3,3535055,35565
+GRC: Greece,Greece,Country,Greece,1,274464.83,10903704,25172
+IT005: Palermo,Palermo,City,Italy,3,20795.05,940259,22116
+IT004: Turin,Turin,City,Italy,3,67329.28,1774507,37943
+IT003: Naples,Naples,City,Italy,3,77675.14,3572928,21740
+IT001: Rome,Rome,City,Italy,3,189919.29,4149364,45771
+IT002: Milan,Milan,City,Italy,3,234523.98,4159854,56378
+ITA: Italy,Italy,Country,Italy,3,2012610.19,60782668,33112
+ES019: Bilbao,Bilbao,City,Spain,2,38248.5,1013805,37728
+ES004: Seville,Seville,City,Spain,2,37140.8,1500644,24750
+ES003: Valencia,Valencia,City,Spain,2,45865.8,1668153,27495
+ES002: Barcelona,Barcelona,City,Spain,2,135803.15,3846697,35304
+ES001: Madrid,Madrid,City,Spain,2,281713.66,7079173,39795
+ESP: Spain,Spain,Country,Spain,2,1466201.92,46512199,31523
+SE003: Malmö,Malmö,City,Sweden,7,24757.23,676852,36577
+SE002: Gothenburg,Gothenburg,City,Sweden,7,36712.77,898541,40858
+SE001: Stockholm,Stockholm,City,Sweden,7,124384.82,2018208,61631
+SWE: Sweden,Sweden,Country,Sweden,7,400599.14,9644864,41535
+NL005: Eindhoven,Eindhoven,City,The Netherlands,9,31087.24,700299,44391
+NL004: Utrecht,Utrecht,City,The Netherlands,9,38118.2,754615,50513
+NL001: The Hague,The Hague,City,The Netherlands,9,39517.77,906897,43575
+NL003: Rotterdam,Rotterdam,City,The Netherlands,9,66510.33,1509373,44065
+NL002: Amsterdam,Amsterdam,City,The Netherlands,9,121289.27,2452659,49452
+NLD: The Netherlands,The Netherlands,Country,The Netherlands,9,743805.45,16829289,44197
+UK010: Newcastle,Newcastle,City,United Kingdom,4,29347.19,1082729,27105
+UK003: Leeds,Leeds,City,United Kingdom,4,43220.65,1197922,36080
+UK006: Manchester,Manchester,City,United Kingdom,4,68331.56,1935559,35303
+UK002: Birmingham,Birmingham,City,United Kingdom,4,61257.08,1957078,31300
+UK001: London,London,City,United Kingdom,4,652583.23,12401188,52623
+GBR: United Kingdom,United Kingdom,Country,United Kingdom,4,2306762.32,64308261,35870
