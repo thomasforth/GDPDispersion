@@ -4,10 +4,12 @@ Calculating GDP dispersion (regional inequality) within Europe and European nati
 I've written two blog posts about this.
 * A blog post about [why I think GDP Dispersion is the best single measure of regional inequality](https://www.tomforth.co.uk/regionalinequality).
 * A blog post with hot takes on [how regional inequality has changed in Europe since 2000](https://www.tomforth.co.uk/regionalinequalitytwo).
-And also,
-* A web tool [showing a tiny fraction of the raw data on GDP by region in Europe](https://www.tomforth.co.uk/regionalinequalitybubbles).
 
-This is the result you're probably looking for. But it's all explained on those blog posts.
+And also,
+* A web tool [showing a tiny fraction of the raw data on GDP by region in Europe](https://www.tomforth.co.uk/regionalinequalitybubbles)
+
+This is the result you're probably looking for. It's also on the blog posts above, which explain it.
+
 ![GDP Dispersion (Regional inequality) since 2000 for selected countries and grouping in this dataset](https://www.tomforth.co.uk/regionalinequalitytwo/GDPDispersion.png).
 
 ## What is GDP dispersion?
