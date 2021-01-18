@@ -26,8 +26,8 @@ France refuses to split the NUTS1 region of Île-de-France (Greater Paris) into 
 
 To fix this we create the UK* measure. This calculates GDP dispersion using NUTS2 regions for the UK except for London, where we remove all the NUTS2 regions for London and instead use the single NUTS1 region. It is arguable that parts of South-East England and East England should also be added to this zone. I have implemented such corrections and you can see them in the source code. I do not think that their inclusion is merited, and doing so would require a full reconsideration of other geographies within Europe which may show the same problem.
 
-## What about the additional measures like Thiel Index and Income Dispersion?
-I have included formulas to calculate additional measures including Thiel Index and Income Dispersion. These have not been checked and are not safe to use. If you can check and fix these that would be great! My understanding of the mathematics of the Thiel Index is limited, specifically I am not yet convinced that the index can be usefully compared across countries and within the same countries if internal boundaries are redrawn.
+## What about the additional measures like Theil Index and Income Dispersion?
+I have included formulas to calculate additional measures including Theil Index and Income Dispersion. These have not been checked and are not safe to use. If you can check and fix these that would be great! My understanding of the mathematics of the Theil Index is limited, specifically I am not yet convinced that the index can be usefully compared across countries and within the same countries if internal boundaries are redrawn.
 
 ## What happens around 2014/2015
 Poland redefined its regions in 2014. France and The Netherlands did the same in 2015. Eurostat do not provide back-calculated data to the modern geographies. Therefore at these points the geographies of each country changes and there are discontinueties. There may be other such changes in geography that I have not noticed.
